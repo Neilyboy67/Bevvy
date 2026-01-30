@@ -1,0 +1,24 @@
+{
+  "name": "Don Julio 1942 Countdown - Neily Bhoy",
+  "short_name": "DJ 1942",
+  "description": "Countdown to January 1, 2030 with a glass of Don Julio 1942",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a0f0a",
+  "theme_color": "#1a0f0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
