@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0a3d2a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BJ Counter">
+  <title>Blackjack Card Counter</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --felt: #0a3d2a;
+      --felt-dark: #062014;
+      --felt-light: #14633f;
+      --gold: #d4af37;
+      --gold-dim: #8a7028;
+      --red: #c0392b;
+      --green: #2ecc71;
+      --text: #f6f1e0;
+      --text-dim: #b6b09a;
+      --panel: rgba(0, 0, 0, 0.45);
+      --panel-border: rgba(212, 175, 55, 0.25);
+    }
+
+    html, body { height: 100%; overscroll-behavior: none; }
+
+    body {
+      min-height: 100dvh;
+      background: radial-gradient(ellipse at top, var(--felt-light) 0%, var(--felt) 35%, var(--felt-dark) 100%);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    #cameraVideo {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none;
+      filter: brightness(0.55) saturate(0.8);
+    }
+
+    body.camera-on #cameraVideo { display: block; }
+    body.camera-on { background: rgba(0, 0, 0, 0.4); }
+
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 12px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--gold);
+    }
+
+    .icon-btn {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .icon-btn:active { transform: scale(0.97); }
+    .icon-btn.on { background: var(--gold); color: #1a1306; border-color: var(--gold); }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .field {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .field label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+    .field input, .field select {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      width: 100%;
+      outline: none;
+      padding: 0;
+    }
+    .field select { cursor: pointer; appearance: none; }
+
+    .bet-card {
+      background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.05));
+      border: 1px solid var(--gold);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      gap: 4px 14px;
+      align-items: center;
+    }
+    .bet-card .bet-label {
+      grid-column: 1; grid-row: 1;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .bet-card .bet-value {
+      grid-column: 1; grid-row: 2;
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .bet-card .bet-detail {
+      grid-column: 2; grid-row: 1 / 3;
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+    .bet-card.advantage { border-color: var(--green); background: linear-gradient(135deg, rgba(46,204,113,0.22), rgba(46,204,113,0.05)); }
+    .bet-card.advantage .bet-label { color: var(--green); }
+
+    .systems {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .sys {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      text-align: left;
+      color: var(--text);
+      font-family: inherit;
+    }
+    .sys:active { transform: scale(0.98); }
+    .sys.active { border-color: var(--gold); background: rgba(212,175,55,0.12); }
+    .sys-name {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .sys-counts {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+    }
+    .sys-counts strong { color: var(--text); font-weight: 700; }
+    .sys.active .sys-name { color: var(--gold); }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .card-btn {
+      aspect-ratio: 3 / 4;
+      background: linear-gradient(180deg, #fbf8ee 0%, #ece5cc 100%);
+      color: #1a1306;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 800;
+      font-size: clamp(20px, 6vw, 28px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -3px 0 rgba(0,0,0,0.08);
+      position: relative;
+      user-select: none;
+      transition: transform 0.05s ease;
+    }
+    .card-btn:active { transform: scale(0.94); }
+    .card-btn .rank {
+      font-size: 1em;
+      line-height: 1;
+    }
+    .card-btn .tag {
+      position: absolute;
+      bottom: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #6e3f1a;
+      letter-spacing: 0.04em;
+    }
+    .card-btn.red { color: var(--red); }
+    .card-btn.red .tag { color: var(--red); }
+    .card-btn.face { background: linear-gradient(180deg, #fbf8ee 0%, #ddd5b8 100%); }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .action-btn {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .action-btn.danger { border-color: rgba(192,57,43,0.6); color: #f5c4be; }
+    .action-btn:active { transform: scale(0.98); }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+    .meta .field .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    details.about {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    details.about summary {
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 13px;
+    }
+    details.about table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+      font-variant-numeric: tabular-nums;
+    }
+    details.about th, details.about td {
+      padding: 4px 6px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 12px;
+    }
+    details.about th { color: var(--gold); font-weight: 700; }
+    details.about td:first-child { text-align: left; color: var(--text); }
+
+    @media (max-width: 380px) {
+      .top-row { grid-template-columns: repeat(2, 1fr); }
+      .meta { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <video id="cameraVideo" autoplay muted playsinline></video>
+
+  <div class="wrap">
+    <header>
+      <div class="title">BLACKJACK COUNTER</div>
+      <div style="display:flex; gap:6px;">
+        <button id="cameraBtn" class="icon-btn" type="button">Camera</button>
+      </div>
+    </header>
+
+    <div class="top-row">
+      <div class="field">
+        <label>Decks</label>
+        <select id="decksInput">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="4">4</option>
+          <option value="6" selected>6</option>
+          <option value="8">8</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Bankroll (u)</label>
+        <input id="bankrollInput" type="number" min="1" step="1" value="1000" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Boxes</label>
+        <input id="boxesInput" type="number" min="1" max="7" step="1" value="2" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Min Unit</label>
+        <input id="minBetInput" type="number" min="1" step="1" value="1" inputmode="numeric">
+      </div>
+    </div>
+
+    <div id="betCard" class="bet-card">
+      <div class="bet-label">Recommended Bet</div>
+      <div class="bet-value"><span id="betPerBox">1</span> u/box</div>
+      <div class="bet-detail">
+        <div><span id="betTotal">2</span> units total</div>
+        <div id="betReason">Off the top — flat bet</div>
+      </div>
+    </div>
+
+    <div class="systems" id="systemsPanel"></div>
+
+    <div class="meta">
+      <div class="field"><label>Cards Seen</label><div class="v" id="cardsSeen">0</div></div>
+      <div class="field"><label>Decks Left</label><div class="v" id="decksLeft">6.0</div></div>
+      <div class="field"><label>Pen %</label><div class="v" id="pen">0%</div></div>
+    </div>
+
+    <div class="cards" id="cardGrid"></div>
+
+    <div class="actions">
+      <button class="action-btn" id="undoBtn" type="button">Undo Last</button>
+      <button class="action-btn danger" id="resetBtn" type="button">Reset Shoe</button>
+    </div>
+
+    <details class="about">
+      <summary>System tag values & method</summary>
+      <p style="margin-top:8px;">Bet ramp uses Hi-Lo equivalent True Count (RPC ÷ 2, RAPC ÷ 4) and the active system. Aces marked <em>side</em> are tracked separately and do not affect the running count for that system.</p>
+      <table>
+        <thead>
+          <tr><th>System</th><th>A</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>T</th></tr>
+        </thead>
+        <tbody id="tagsTable"></tbody>
+      </table>
+      <p style="margin-top:10px; font-size:11px;">Bet ramp (per box, Hi-Lo eq. TC): TC&lt;1→1u, TC&lt;2→1u, TC&lt;3→2u, TC&lt;4→4u, TC&lt;5→6u, TC&lt;6→8u, TC≥6→10u. Capped at ~1% bankroll per box. Total bet = boxes × per-box.</p>
+    </details>
+
+    <details class="about">
+      <summary>How to use</summary>
+      <p style="margin-top:8px;">Tap each card as it is dealt — to you, the dealer, or any other box. The running count and recommended bet update live. Switch active system by tapping it. Reset the shoe when the dealer shuffles.</p>
+      <p style="margin-top:6px;">Camera mode opens the rear camera as a backdrop so you can keep the table in view while tapping. There is no automatic card recognition.</p>
+    </details>
+  </div>
+
+  <script>
+    const SYSTEMS = {
+      five: {
+        name: 'Five Count',
+        level: 1,
+        sideAces: false,
+        tags: { A: 0, '2': 0, '3': 0, '4': 0, '5': -1, '6': 0, '7': 0, '8': 0, '9': 0, T: 0 },
+        balanced: false,
+        note: 'Tracks 5s only — historical/teaching.'
+      },
+      plusMinus: {
+        name: 'Plus-Minus',
+        level: 1,
+        sideAces: false,
+        tags: { A: -1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 0, '8': 0, '9': 0, T: -1 },
+        balanced: true
+      },
+      rpc: {
+        name: 'Point Count (RPC)',
+        level: 2,
+        sideAces: false,
+        tags: { A: -2, '2': 1, '3': 2, '4': 2, '5': 2, '6': 2, '7': 1, '8': 0, '9': 0, T: -2 },
+        balanced: true
+      },
+      rapc: {
+        name: 'Advanced (RAPC)',
+        level: 4,
+        sideAces: true,
+        tags: { A: 0, '2': 2, '3': 2, '4': 3, '5': 4, '6': 2, '7': 1, '8': 0, '9': -2, T: -3 },
+        balanced: true
+      }
+    };
+
+    const RANK_LIST = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    const RANK_TO_TAG = { 'A':'A','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9','10':'T','J':'T','Q':'T','K':'T' };
+
+    const state = {
+      decks: 6,
+      bankroll: 1000,
+      boxes: 2,
+      minBet: 1,
+      activeSystem: 'plusMinus',
+      seen: [],
+      cameraOn: false,
+      cameraStream: null
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function totalCards() { return state.decks * 52; }
+    function cardsRemaining() { return totalCards() - state.seen.length; }
+    function decksRemaining() { return Math.max(0.25, cardsRemaining() / 52); }
+
+    function aceCount() {
+      return state.seen.filter(r => r === 'A').length;
+    }
+
+    function runningCount(systemKey) {
+      const sys = SYSTEMS[systemKey];
+      let rc = 0;
+      for (const rank of state.seen) {
+        const tagKey = RANK_TO_TAG[rank];
+        if (sys.sideAces && tagKey === 'A') continue;
+        rc += sys.tags[tagKey];
+      }
+      return rc;
+    }
+
+    function trueCount(systemKey) {
+      const rc = runningCount(systemKey);
+      return rc / decksRemaining();
+    }
+
+    function hiLoEquivTC(systemKey) {
+      const tc = trueCount(systemKey);
+      return tc / SYSTEMS[systemKey].level;
+    }
+
+    function suggestPerBox(hlTC) {
+      if (hlTC < 1) return state.minBet;
+      if (hlTC < 2) return state.minBet;
+      if (hlTC < 3) return state.minBet * 2;
+      if (hlTC < 4) return state.minBet * 4;
+      if (hlTC < 5) return state.minBet * 6;
+      if (hlTC < 6) return state.minBet * 8;
+      return state.minBet * 10;
+    }
+
+    function recommendBet() {
+      const sys = SYSTEMS[state.activeSystem];
+      let perBox, reason;
+
+      if (state.activeSystem === 'five') {
+        const fivesSeen = state.seen.filter(r => r === '5').length;
+        const totalFives = state.decks * 4;
+        const fivesLeft = totalFives - fivesSeen;
+        const expectedFives = (cardsRemaining() / 13);
+        const ratio = fivesLeft / Math.max(1, expectedFives);
+        if (ratio < 0.5 && state.seen.length > totalCards() * 0.25) {
+          perBox = state.minBet * 4;
+          reason = `Few 5s left (${fivesLeft} of ${totalFives}) — advantage`;
+        } else if (ratio < 0.8 && state.seen.length > totalCards() * 0.25) {
+          perBox = state.minBet * 2;
+          reason = `${fivesLeft} 5s remaining — slight edge`;
+        } else {
+          perBox = state.minBet;
+          reason = `${fivesLeft} 5s remaining — flat bet`;
+        }
+      } else {
+        const hlTC = hiLoEquivTC(state.activeSystem);
+        perBox = suggestPerBox(hlTC);
+        if (state.seen.length === 0) {
+          reason = 'Off the top — flat bet';
+        } else if (hlTC < 1) {
+          reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — minimum`;
+        } else {
+          reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — ramp up`;
+        }
+      }
+
+      const bankrollCapPerBox = Math.max(1, Math.floor(state.bankroll * 0.01));
+      perBox = Math.min(perBox, bankrollCapPerBox);
+      perBox = Math.max(state.minBet, perBox);
+
+      const total = perBox * state.boxes;
+      return { perBox, total, reason };
+    }
+
+    function buildSystemsPanel() {
+      const panel = $('systemsPanel');
+      panel.innerHTML = '';
+      for (const key of Object.keys(SYSTEMS)) {
+        const sys = SYSTEMS[key];
+        const btn = document.createElement('button');
+        btn.className = 'sys' + (key === state.activeSystem ? ' active' : '');
+        btn.dataset.key = key;
+        btn.type = 'button';
+        btn.innerHTML = `
+          <div class="sys-name">${sys.name}<span style="color:var(--text-dim); font-weight:400; font-size:10px;"> · L${sys.level}</span></div>
+          <div class="sys-counts">
+            <span>RC <strong data-rc>0</strong></span>
+            <span>TC <strong data-tc>0.0</strong></span>
+            ${sys.sideAces ? '<span>A <strong data-a>0</strong></span>' : ''}
+          </div>
+        `;
+        btn.addEventListener('click', () => {
+          state.activeSystem = key;
+          buildSystemsPanel();
+          render();
+        });
+        panel.appendChild(btn);
+      }
+    }
+
+    function buildCardGrid() {
+      const grid = $('cardGrid');
+      grid.innerHTML = '';
+      const sys = SYSTEMS[state.activeSystem];
+      for (const rank of RANK_LIST) {
+        const tagKey = RANK_TO_TAG[rank];
+        const tag = sys.tags[tagKey];
+        const isFace = rank === 'J' || rank === 'Q' || rank === 'K';
+        const btn = document.createElement('button');
+        btn.className = 'card-btn' + (isFace ? ' face' : '');
+        btn.type = 'button';
+        btn.dataset.rank = rank;
+        const showTag = !(sys.sideAces && rank === 'A');
+        btn.innerHTML = `
+          <span class="rank">${rank}</span>
+          <span class="tag">${showTag ? (tag > 0 ? '+' + tag : tag) : 'side'}</span>
+        `;
+        btn.addEventListener('click', () => addCard(rank));
+        grid.appendChild(btn);
+      }
+    }
+
+    function buildTagsTable() {
+      const tbody = $('tagsTable');
+      tbody.innerHTML = '';
+      for (const key of Object.keys(SYSTEMS)) {
+        const sys = SYSTEMS[key];
+        const fmt = (v, isAce) => sys.sideAces && isAce ? 'side' : (v > 0 ? '+' + v : v);
+        tbody.innerHTML += `
+          <tr>
+            <td>${sys.name}</td>
+            <td>${fmt(sys.tags.A, true)}</td>
+            <td>${fmt(sys.tags['2'])}</td>
+            <td>${fmt(sys.tags['3'])}</td>
+            <td>${fmt(sys.tags['4'])}</td>
+            <td>${fmt(sys.tags['5'])}</td>
+            <td>${fmt(sys.tags['6'])}</td>
+            <td>${fmt(sys.tags['7'])}</td>
+            <td>${fmt(sys.tags['8'])}</td>
+            <td>${fmt(sys.tags['9'])}</td>
+            <td>${fmt(sys.tags.T)}</td>
+          </tr>
+        `;
+      }
+    }
+
+    function addCard(rank) {
+      if (state.seen.length >= totalCards()) return;
+      state.seen.push(rank);
+      saveState();
+      render();
+    }
+
+    function undo() {
+      if (state.seen.length === 0) return;
+      state.seen.pop();
+      saveState();
+      render();
+    }
+
+    function reset() {
+      if (state.seen.length === 0 || confirm('Reset the shoe?')) {
+        state.seen = [];
+        saveState();
+        render();
+      }
+    }
+
+    function render() {
+      const dr = decksRemaining();
+      $('cardsSeen').textContent = state.seen.length;
+      $('decksLeft').textContent = dr.toFixed(1);
+      $('pen').textContent = Math.round((state.seen.length / totalCards()) * 100) + '%';
+
+      document.querySelectorAll('.sys').forEach(node => {
+        const key = node.dataset.key;
+        const sys = SYSTEMS[key];
+        const rc = runningCount(key);
+        const tc = trueCount(key);
+        node.querySelector('[data-rc]').textContent = rc > 0 ? '+' + rc : rc;
+        node.querySelector('[data-tc]').textContent = tc.toFixed(1);
+        if (sys.sideAces) {
+          const aceEl = node.querySelector('[data-a]');
+          if (aceEl) aceEl.textContent = aceCount();
+        }
+        node.classList.toggle('active', key === state.activeSystem);
+      });
+
+      const bet = recommendBet();
+      $('betPerBox').textContent = bet.perBox;
+      $('betTotal').textContent = bet.total;
+      $('betReason').textContent = bet.reason;
+      $('betCard').classList.toggle('advantage', bet.perBox > state.minBet);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('bj-counter', JSON.stringify({
+          decks: state.decks, bankroll: state.bankroll, boxes: state.boxes,
+          minBet: state.minBet, activeSystem: state.activeSystem, seen: state.seen
+        }));
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem('bj-counter');
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        Object.assign(state, s);
+      } catch (e) {}
+    }
+
+    async function toggleCamera() {
+      const btn = $('cameraBtn');
+      if (state.cameraOn) {
+        if (state.cameraStream) state.cameraStream.getTracks().forEach(t => t.stop());
+        state.cameraStream = null;
+        state.cameraOn = false;
+        document.body.classList.remove('camera-on');
+        btn.classList.remove('on');
+        btn.textContent = 'Camera';
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+          audio: false
+        });
+        state.cameraStream = stream;
+        $('cameraVideo').srcObject = stream;
+        state.cameraOn = true;
+        document.body.classList.add('camera-on');
+        btn.classList.add('on');
+        btn.textContent = 'Camera On';
+      } catch (err) {
+        alert('Camera unavailable: ' + (err.message || err.name));
+      }
+    }
+
+    function init() {
+      loadState();
+
+      $('decksInput').value = state.decks;
+      $('bankrollInput').value = state.bankroll;
+      $('boxesInput').value = state.boxes;
+      $('minBetInput').value = state.minBet;
+
+      $('decksInput').addEventListener('change', e => {
+        state.decks = parseInt(e.target.value, 10) || 6;
+        if (state.seen.length > totalCards()) state.seen = state.seen.slice(0, totalCards());
+        saveState(); render();
+      });
+      $('bankrollInput').addEventListener('input', e => {
+        state.bankroll = Math.max(1, parseInt(e.target.value, 10) || 0);
+        saveState(); render();
+      });
+      $('boxesInput').addEventListener('input', e => {
+        state.boxes = Math.max(1, Math.min(7, parseInt(e.target.value, 10) || 1));
+        saveState(); render();
+      });
+      $('minBetInput').addEventListener('input', e => {
+        state.minBet = Math.max(1, parseInt(e.target.value, 10) || 1);
+        saveState(); render();
+      });
+
+      $('undoBtn').addEventListener('click', undo);
+      $('resetBtn').addEventListener('click', reset);
+      $('cameraBtn').addEventListener('click', toggleCamera);
+
+      buildSystemsPanel();
+      buildCardGrid();
+      buildTagsTable();
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
