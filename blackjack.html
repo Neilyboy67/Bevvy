@@ -564,11 +564,177 @@
             text-align: right;
         }
 
+        /* ===== EV TRACKER PANEL ===== */
+        .ev-panel {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ev-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ev-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            color: var(--text-dim);
+        }
+
+        .ev-edge-display {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .ev-edge-value {
+            font-size: 28px;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .ev-edge-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+
+        .ev-negative .ev-edge-value { color: #e74c3c; }
+        .ev-neutral .ev-edge-value { color: var(--gold); }
+        .ev-positive .ev-edge-value { color: var(--green); }
+        .ev-hot .ev-edge-value { color: #00ff88; text-shadow: 0 0 12px rgba(0,255,136,0.4); }
+
+        .ev-gauge-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ev-gauge-fill {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            border-radius: 3px;
+            transition: left 0.3s, width 0.3s, background 0.3s;
+        }
+
+        .ev-gauge-center {
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background: rgba(255,255,255,0.25);
+            transform: translateX(-50%);
+        }
+
+        .ev-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .ev-stat {
+            text-align: center;
+        }
+
+        .ev-stat-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .ev-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--text);
+        }
+
+        .ev-stat-value.positive { color: var(--green); }
+        .ev-stat-value.negative { color: #e74c3c; }
+
+        .ev-source {
+            font-size: 9px;
+            color: rgba(255,255,255,0.3);
+            text-align: right;
+            font-style: italic;
+        }
+
+        /* ===== BASIC STRATEGY REFERENCE ===== */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: auto repeat(10, 1fr);
+            gap: 1px;
+            font-size: 10px;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .strategy-grid .sg-cell {
+            padding: 3px 2px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .strategy-grid .sg-header {
+            background: rgba(212,175,55,0.15);
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .strategy-grid .sg-row-label {
+            text-align: right;
+            padding-right: 4px;
+            color: var(--text);
+            font-weight: 700;
+            background: rgba(0,0,0,0.4);
+        }
+
+        .sg-H { color: #fff; }
+        .sg-S { color: #f1c40f; background: rgba(241,196,15,0.1) !important; }
+        .sg-D { color: #3498db; background: rgba(52,152,219,0.12) !important; }
+        .sg-P { color: #2ecc71; background: rgba(46,204,113,0.12) !important; }
+        .sg-R { color: #e74c3c; background: rgba(231,76,60,0.1) !important; }
+
+        .strategy-section-label {
+            grid-column: 1 / -1;
+            text-align: left;
+            padding: 5px 4px 3px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(212,175,55,0.08) !important;
+        }
+
         @media (max-width: 380px) {
             .top-row {
                 grid-template-columns: repeat(2, 1fr);
             }
             .meta {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .ev-stats {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
@@ -644,6 +810,35 @@
             </div>
         </div>
 
+        <div class="ev-panel" id="evPanel">
+            <div class="ev-header">
+                <span class="ev-title">Player Edge</span>
+                <span class="ev-edge-display">
+                    <span class="ev-edge-value" id="evEdgeValue">-0.40%</span>
+                    <span class="ev-edge-label" id="evEdgeLabel">house</span>
+                </span>
+            </div>
+            <div class="ev-gauge-track">
+                <div class="ev-gauge-center"></div>
+                <div class="ev-gauge-fill" id="evGaugeFill"></div>
+            </div>
+            <div class="ev-stats">
+                <div class="ev-stat">
+                    <div class="ev-stat-label">Hands</div>
+                    <div class="ev-stat-value" id="evHands">0</div>
+                </div>
+                <div class="ev-stat">
+                    <div class="ev-stat-label">Session EV</div>
+                    <div class="ev-stat-value" id="evSession">0.00u</div>
+                </div>
+                <div class="ev-stat">
+                    <div class="ev-stat-label">Avg Edge</div>
+                    <div class="ev-stat-value" id="evAvgEdge">--</div>
+                </div>
+            </div>
+            <div class="ev-source">Griffin/Schlesinger: -0.40% base + 0.50%/TC (6D S17 DAS 3:2)</div>
+        </div>
+
         <div class="systems" id="systemsPanel"></div>
 
         <div class="meta">
@@ -654,10 +849,28 @@
 
         <div class="cards" id="cardGrid"></div>
 
-        <div class="actions">
+        <div class="actions" style="grid-template-columns: 1fr 1fr 1fr;">
             <button class="action-btn" id="undoBtn" type="button">Undo Last</button>
+            <button class="action-btn" id="logHandBtn" type="button" style="border-color: rgba(46,204,113,0.5); color: var(--green);">Log Hand</button>
             <button class="action-btn danger" id="resetBtn" type="button">Reset Shoe</button>
         </div>
+
+        <details class="about" id="strategyDetails">
+            <summary>Basic Strategy (4-8D, S17, DAS, 3:2)</summary>
+            <div id="strategyGrid"></div>
+            <p style="margin-top:8px; font-size:10px;">H=Hit S=Stand D=Double(hit) Ds=Double(stand) P=Split Ph=Split(hit) Rh=Surrender(hit)</p>
+        </details>
+
+        <details class="about">
+            <summary>EV Methodology</summary>
+            <p style="margin-top:8px;">Expected Value calculated using the Hi-Lo count system per the reference literature:</p>
+            <p style="margin-top:6px;"><strong>Base house edge:</strong> -0.403% (6-deck, dealer stands on soft 17, double after split, blackjack pays 3:2). Source: Griffin, <em>The Theory of Blackjack</em>.</p>
+            <p style="margin-top:6px;"><strong>Per true count advantage:</strong> +0.50% per unit of true count. Source: Schlesinger, <em>Blackjack Attack</em>; Wong, <em>Professional Blackjack</em>.</p>
+            <p style="margin-top:6px;"><strong>Formula:</strong> Player Edge = -0.403% + (True Count &times; 0.50%)</p>
+            <p style="margin-top:6px;"><strong>Bet sizing:</strong> Kelly Criterion — optimal bet = Edge &times; Bankroll / Variance. Simplified to a 1-10 unit spread with bankroll cap of 1% per box.</p>
+            <p style="margin-top:6px;"><strong>Breakeven point:</strong> True Count &ge; +1 (edge &asymp; +0.10%)</p>
+            <p style="margin-top:6px;font-size:10px;color:var(--text-dim);">The Hi-Lo system has a Betting Correlation (BC) of 0.97, Playing Correlation (PC) of 0.51, and Insurance Correlation (IC) of 0.76.</p>
+        </details>
 
         <details class="about">
             <summary>System tag values & method</summary>
@@ -714,6 +927,215 @@
             balanced: true
         }
     };
+
+    /* ========================================================================
+       EV CALCULATION ENGINE
+       Based on: Griffin "The Theory of Blackjack", Schlesinger "Blackjack Attack",
+       Wong "Professional Blackjack"
+       ======================================================================== */
+    const EV_CONFIG = {
+        // Base house edge for 6-deck, S17, DAS, 3:2 BJ, no surrender, no RSA
+        // Source: Griffin, confirmed by Schlesinger simulation data
+        baseEdge: -0.403,
+        // Player advantage gain per unit of Hi-Lo true count
+        // Source: Schlesinger "Blackjack Attack" Table 10.1; Griffin ch.7
+        perTrueCount: 0.50,
+        // Variance per hand (used for Kelly sizing) — approx 1.32 for standard BJ
+        variance: 1.32,
+        // Kelly fraction — full Kelly is aggressive; 0.5 = half-Kelly (recommended)
+        kellyFraction: 0.5
+    };
+
+    // Session EV tracking
+    const session = {
+        hands: 0,
+        totalEdge: 0,      // cumulative edge % across all hands
+        totalEV: 0,        // cumulative EV in units
+        betHistory: []      // [{edge, bet, units}]
+    };
+
+    function calculatePlayerEdge() {
+        // Use Hi-Lo true count (Plus-Minus system IS Hi-Lo)
+        const hlTC = trueCount('plusMinus');
+        const edge = EV_CONFIG.baseEdge + (hlTC * EV_CONFIG.perTrueCount);
+        return edge;
+    }
+
+    function getKellyBet(edgePct, bankroll) {
+        // Kelly criterion: f* = edge / variance
+        // Half-Kelly for safety: f = 0.5 * edge / variance
+        if (edgePct <= 0) return 0;
+        const edge = edgePct / 100;
+        const kellyFraction = EV_CONFIG.kellyFraction * (edge / EV_CONFIG.variance);
+        return Math.max(0, Math.round(kellyFraction * bankroll));
+    }
+
+    function logHand() {
+        const edge = calculatePlayerEdge();
+        const bet = recommendBet();
+        session.hands++;
+        session.totalEdge += edge;
+        session.totalEV += (edge / 100) * bet.total;
+        session.betHistory.push({
+            edge: edge,
+            bet: bet.total,
+            ev: (edge / 100) * bet.total
+        });
+        saveSession();
+        render();
+    }
+
+    function resetSession() {
+        session.hands = 0;
+        session.totalEdge = 0;
+        session.totalEV = 0;
+        session.betHistory = [];
+        saveSession();
+    }
+
+    function saveSession() {
+        try {
+            localStorage.setItem('bj-session', JSON.stringify(session));
+        } catch(e) {}
+    }
+
+    function loadSession() {
+        try {
+            const raw = localStorage.getItem('bj-session');
+            if (!raw) return;
+            Object.assign(session, JSON.parse(raw));
+        } catch(e) {}
+    }
+
+    function renderEV() {
+        const edge = calculatePlayerEdge();
+        const edgeStr = (edge >= 0 ? '+' : '') + edge.toFixed(2) + '%';
+
+        // Classify edge state
+        let cls, label;
+        if (edge >= 1.5) { cls = 'ev-hot'; label = 'player'; }
+        else if (edge >= 0) { cls = 'ev-positive'; label = 'player'; }
+        else if (edge >= -0.2) { cls = 'ev-neutral'; label = 'near even'; }
+        else { cls = 'ev-negative'; label = 'house'; }
+
+        const panel = $('evPanel');
+        panel.className = 'ev-panel ' + cls;
+        $('evEdgeValue').textContent = edgeStr;
+        $('evEdgeLabel').textContent = label;
+
+        // Gauge: center = 0%, left = -3%, right = +3%
+        const gaugeMin = -3, gaugeMax = 3;
+        const clamped = Math.max(gaugeMin, Math.min(gaugeMax, edge));
+        const fill = $('evGaugeFill');
+        if (clamped >= 0) {
+            const pct = (clamped / gaugeMax) * 50;
+            fill.style.left = '50%';
+            fill.style.width = pct + '%';
+            fill.style.background = edge >= 1.5 ? '#00ff88' : 'var(--green)';
+        } else {
+            const pct = (Math.abs(clamped) / Math.abs(gaugeMin)) * 50;
+            fill.style.left = (50 - pct) + '%';
+            fill.style.width = pct + '%';
+            fill.style.background = '#e74c3c';
+        }
+
+        // Session stats
+        $('evHands').textContent = session.hands;
+        const evVal = session.totalEV;
+        const evEl = $('evSession');
+        evEl.textContent = (evVal >= 0 ? '+' : '') + evVal.toFixed(2) + 'u';
+        evEl.className = 'ev-stat-value ' + (evVal >= 0 ? 'positive' : 'negative');
+
+        const avgEl = $('evAvgEdge');
+        if (session.hands > 0) {
+            const avg = session.totalEdge / session.hands;
+            avgEl.textContent = (avg >= 0 ? '+' : '') + avg.toFixed(2) + '%';
+            avgEl.className = 'ev-stat-value ' + (avg >= 0 ? 'positive' : 'negative');
+        } else {
+            avgEl.textContent = '--';
+            avgEl.className = 'ev-stat-value';
+        }
+    }
+
+    /* ========================================================================
+       BASIC STRATEGY TABLE (4-8 Deck, Dealer Stands on Soft 17)
+       Source: wizardofodds.com / Stanford Wong "Basic Blackjack"
+       ======================================================================== */
+    const BASIC_STRATEGY = {
+        hard: {
+            //       2     3     4     5     6     7     8     9     10    A
+            '4-8': ['H',  'H',  'H',  'H',  'H',  'H',  'H',  'H',  'H',  'H'],
+            '9':   ['H',  'Dh', 'Dh', 'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '10':  ['Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'H',  'H'],
+            '11':  ['Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'Dh', 'H'],
+            '12':  ['H',  'H',  'S',  'S',  'S',  'H',  'H',  'H',  'H',  'H'],
+            '13':  ['S',  'S',  'S',  'S',  'S',  'H',  'H',  'H',  'H',  'H'],
+            '14':  ['S',  'S',  'S',  'S',  'S',  'H',  'H',  'H',  'H',  'H'],
+            '15':  ['S',  'S',  'S',  'S',  'S',  'H',  'H',  'H',  'Rh', 'H'],
+            '16':  ['S',  'S',  'S',  'S',  'S',  'H',  'H',  'Rh', 'Rh', 'Rh'],
+            '17+': ['S',  'S',  'S',  'S',  'S',  'S',  'S',  'S',  'S',  'S']
+        },
+        soft: {
+            '13':  ['H',  'H',  'H',  'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '14':  ['H',  'H',  'H',  'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '15':  ['H',  'H',  'Dh', 'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '16':  ['H',  'H',  'Dh', 'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '17':  ['H',  'Dh', 'Dh', 'Dh', 'Dh', 'H',  'H',  'H',  'H',  'H'],
+            '18':  ['S',  'Ds', 'Ds', 'Ds', 'Ds', 'S',  'S',  'H',  'H',  'H'],
+            '19+': ['S',  'S',  'S',  'S',  'S',  'S',  'S',  'S',  'S',  'S']
+        },
+        splits: {
+            '2,2': ['Ph', 'Ph', 'P',  'P',  'P',  'P',  'H',  'H',  'H',  'H'],
+            '3,3': ['Ph', 'Ph', 'P',  'P',  'P',  'P',  'H',  'H',  'H',  'H'],
+            '4,4': ['H',  'H',  'H',  'Ph', 'Ph', 'H',  'H',  'H',  'H',  'H'],
+            '6,6': ['Ph', 'P',  'P',  'P',  'P',  'H',  'H',  'H',  'H',  'H'],
+            '7,7': ['P',  'P',  'P',  'P',  'P',  'P',  'H',  'H',  'H',  'H'],
+            '8,8': ['P',  'P',  'P',  'P',  'P',  'P',  'P',  'P',  'P',  'P'],
+            '9,9': ['P',  'P',  'P',  'P',  'P',  'S',  'P',  'P',  'S',  'S'],
+            'A,A': ['P',  'P',  'P',  'P',  'P',  'P',  'P',  'P',  'P',  'P']
+        }
+    };
+
+    function buildStrategyGrid() {
+        const container = $('strategyGrid');
+        const dealerCards = ['2','3','4','5','6','7','8','9','10','A'];
+        let html = '<div class="strategy-grid">';
+
+        // Helper to get CSS class for action
+        const actionClass = a => {
+            if (a.startsWith('D') || a === 'Dh' || a === 'Ds') return 'sg-D';
+            if (a === 'P' || a === 'Ph') return 'sg-P';
+            if (a.startsWith('R')) return 'sg-R';
+            if (a === 'S') return 'sg-S';
+            return 'sg-H';
+        };
+
+        const sections = [
+            { label: 'Hard Totals', data: BASIC_STRATEGY.hard, rows: ['4-8','9','10','11','12','13','14','15','16','17+'] },
+            { label: 'Soft Totals', data: BASIC_STRATEGY.soft, rows: ['13','14','15','16','17','18','19+'] },
+            { label: 'Splits', data: BASIC_STRATEGY.splits, rows: ['2,2','3,3','4,4','6,6','7,7','8,8','9,9','A,A'] }
+        ];
+
+        for (const sec of sections) {
+            // Section header
+            html += `<div class="sg-cell strategy-section-label">${sec.label}</div>`;
+            // Dealer card headers
+            html += '<div class="sg-cell sg-header"></div>';
+            for (const d of dealerCards) html += `<div class="sg-cell sg-header">${d}</div>`;
+            // Rows
+            for (const row of sec.rows) {
+                html += `<div class="sg-cell sg-row-label">${row}</div>`;
+                const actions = sec.data[row];
+                for (let i = 0; i < actions.length; i++) {
+                    const a = actions[i];
+                    html += `<div class="sg-cell ${actionClass(a)}">${a}</div>`;
+                }
+            }
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
 
     const RANK_LIST = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     const RANK_TO_TAG = { 'A':'A','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9','10':'T','J':'T','Q':'T','K':'T' };
@@ -892,7 +1314,7 @@
     }
 
     function reset() {
-        if (state.seen.length === 0 || confirm('Reset the shoe?')) {
+        if (state.seen.length === 0 || confirm('Reset shoe? (Session EV will continue tracking across shoes)')) {
             state.seen = [];
             saveState();
             render();
@@ -924,6 +1346,9 @@
         $('betTotal').textContent = bet.total;
         $('betReason').textContent = bet.reason;
         $('betCard').classList.toggle('advantage', bet.perBox > state.minBet);
+
+        // Update EV panel
+        renderEV();
     }
 
     function saveState() {
@@ -1621,6 +2046,10 @@
         buildSystemsPanel();
         buildCardGrid();
         buildTagsTable();
+
+        loadSession();
+        $('logHandBtn').addEventListener('click', logHand);
+        buildStrategyGrid();
         render();
     }
 
