@@ -1,434 +1,732 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#0a3d2a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="BJ Counter">
-  <title>Blackjack Card Counter</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#0a3d2a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BJ Counter">
+    <title>Blackjack Card Counter</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    :root {
-      --felt: #0a3d2a;
-      --felt-dark: #062014;
-      --felt-light: #14633f;
-      --gold: #d4af37;
-      --gold-dim: #8a7028;
-      --red: #c0392b;
-      --green: #2ecc71;
-      --text: #f6f1e0;
-      --text-dim: #b6b09a;
-      --panel: rgba(0, 0, 0, 0.45);
-      --panel-border: rgba(212, 175, 55, 0.25);
-    }
+        :root {
+            --felt: #0a3d2a;
+            --felt-dark: #062014;
+            --felt-light: #14633f;
+            --gold: #d4af37;
+            --gold-dim: #8a7028;
+            --red: #c0392b;
+            --green: #2ecc71;
+            --text: #f6f1e0;
+            --text-dim: #b6b09a;
+            --panel: rgba(0, 0, 0, 0.45);
+            --panel-border: rgba(212, 175, 55, 0.25);
+        }
 
-    html, body { height: 100%; overscroll-behavior: none; }
+        html, body {
+            height: 100%;
+            overscroll-behavior: none;
+        }
 
-    body {
-      min-height: 100dvh;
-      background: radial-gradient(ellipse at top, var(--felt-light) 0%, var(--felt) 35%, var(--felt-dark) 100%);
-      color: var(--text);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      font-size: 16px;
-      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-      position: relative;
-      overflow-x: hidden;
-    }
+        body {
+            min-height: 100dvh;
+            background: radial-gradient(ellipse at top, var(--felt-light) 0%, var(--felt) 35%, var(--felt-dark) 100%);
+            color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size: 16px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            position: relative;
+            overflow-x: hidden;
+        }
 
-    #cameraVideo {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-      display: none;
-      filter: brightness(0.55) saturate(0.8);
-    }
+        #cameraVideo {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            display: none;
+            filter: brightness(0.55) saturate(0.8);
+        }
 
-    body.camera-on #cameraVideo { display: block; }
-    body.camera-on { background: rgba(0, 0, 0, 0.4); }
+        body.camera-on #cameraVideo {
+            display: block;
+        }
 
-    .wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 12px 14px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+        body.camera-on {
+            background: rgba(0, 0, 0, 0.4);
+        }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
+        .wrap {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 12px 14px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-    .title {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--gold);
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .icon-btn {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .icon-btn:active { transform: scale(0.97); }
-    .icon-btn.on { background: var(--gold); color: #1a1306; border-color: var(--gold); }
+        .title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: var(--gold);
+        }
 
-    .top-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
+        .icon-btn {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .field {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .field label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--text-dim);
-      font-weight: 600;
-    }
-    .field input, .field select {
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      width: 100%;
-      outline: none;
-      padding: 0;
-    }
-    .field select { cursor: pointer; appearance: none; }
+        .icon-btn:active {
+            transform: scale(0.97);
+        }
 
-    .bet-card {
-      background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.05));
-      border: 1px solid var(--gold);
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-      gap: 4px 14px;
-      align-items: center;
-    }
-    .bet-card .bet-label {
-      grid-column: 1; grid-row: 1;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--gold);
-      font-weight: 700;
-    }
-    .bet-card .bet-value {
-      grid-column: 1; grid-row: 2;
-      font-size: 30px;
-      font-weight: 800;
-      color: var(--text);
-      line-height: 1.1;
-    }
-    .bet-card .bet-detail {
-      grid-column: 2; grid-row: 1 / 3;
-      text-align: right;
-      font-size: 12px;
-      color: var(--text-dim);
-      line-height: 1.4;
-    }
-    .bet-card.advantage { border-color: var(--green); background: linear-gradient(135deg, rgba(46,204,113,0.22), rgba(46,204,113,0.05)); }
-    .bet-card.advantage .bet-label { color: var(--green); }
+        .icon-btn.on {
+            background: var(--gold);
+            color: #1a1306;
+            border-color: var(--gold);
+        }
 
-    .systems {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-    .sys {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 8px 10px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      text-align: left;
-      color: var(--text);
-      font-family: inherit;
-    }
-    .sys:active { transform: scale(0.98); }
-    .sys.active { border-color: var(--gold); background: rgba(212,175,55,0.12); }
-    .sys-name {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-    }
-    .sys-counts {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--text-dim);
-      font-variant-numeric: tabular-nums;
-    }
-    .sys-counts strong { color: var(--text); font-weight: 700; }
-    .sys.active .sys-name { color: var(--gold); }
+        .top-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-    .card-btn {
-      aspect-ratio: 3 / 4;
-      background: linear-gradient(180deg, #fbf8ee 0%, #ece5cc 100%);
-      color: #1a1306;
-      border: none;
-      border-radius: 10px;
-      font-family: 'Inter', sans-serif;
-      font-weight: 800;
-      font-size: clamp(20px, 6vw, 28px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -3px 0 rgba(0,0,0,0.08);
-      position: relative;
-      user-select: none;
-      transition: transform 0.05s ease;
-    }
-    .card-btn:active { transform: scale(0.94); }
-    .card-btn .rank {
-      font-size: 1em;
-      line-height: 1;
-    }
-    .card-btn .tag {
-      position: absolute;
-      bottom: 5px;
-      font-size: 10px;
-      font-weight: 700;
-      color: #6e3f1a;
-      letter-spacing: 0.04em;
-    }
-    .card-btn.red { color: var(--red); }
-    .card-btn.red .tag { color: var(--red); }
-    .card-btn.face { background: linear-gradient(180deg, #fbf8ee 0%, #ddd5b8 100%); }
+        .field {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
 
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .action-btn {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .action-btn.danger { border-color: rgba(192,57,43,0.6); color: #f5c4be; }
-    .action-btn:active { transform: scale(0.98); }
+        .field label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
 
-    .meta {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      font-size: 12px;
-    }
-    .meta .field .v { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .field input, .field select {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            width: 100%;
+            outline: none;
+            padding: 0;
+        }
 
-    details.about {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 13px;
-      color: var(--text-dim);
-    }
-    details.about summary {
-      cursor: pointer;
-      color: var(--text);
-      font-weight: 600;
-      font-size: 13px;
-    }
-    details.about table {
-      width: 100%;
-      margin-top: 10px;
-      border-collapse: collapse;
-      font-variant-numeric: tabular-nums;
-    }
-    details.about th, details.about td {
-      padding: 4px 6px;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      font-size: 12px;
-    }
-    details.about th { color: var(--gold); font-weight: 700; }
-    details.about td:first-child { text-align: left; color: var(--text); }
+        .field select {
+            cursor: pointer;
+            appearance: none;
+        }
 
-    @media (max-width: 380px) {
-      .top-row { grid-template-columns: repeat(2, 1fr); }
-      .meta { grid-template-columns: repeat(2, 1fr); }
-    }
-  </style>
+        .bet-card {
+            background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.05));
+            border: 1px solid var(--gold);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-rows: auto auto;
+            gap: 4px 14px;
+            align-items: center;
+        }
+
+        .bet-card .bet-label {
+            grid-column: 1;
+            grid-row: 1;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .bet-card .bet-value {
+            grid-column: 1;
+            grid-row: 2;
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1.1;
+        }
+
+        .bet-card .bet-detail {
+            grid-column: 2;
+            grid-row: 1 / 3;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        .bet-card.advantage {
+            border-color: var(--green);
+            background: linear-gradient(135deg, rgba(46,204,113,0.22), rgba(46,204,113,0.05));
+        }
+
+        .bet-card.advantage .bet-label {
+            color: var(--green);
+        }
+
+        .systems {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .sys {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .sys:active {
+            transform: scale(0.98);
+        }
+
+        .sys.active {
+            border-color: var(--gold);
+            background: rgba(212,175,55,0.12);
+        }
+
+        .sys-name {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .sys-counts {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sys-counts strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .sys.active .sys-name {
+            color: var(--gold);
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .card-btn {
+            aspect-ratio: 3 / 4;
+            background: linear-gradient(180deg, #fbf8ee 0%, #ece5cc 100%);
+            color: #1a1306;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: clamp(20px, 6vw, 28px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 -3px 0 rgba(0,0,0,0.08);
+            position: relative;
+            user-select: none;
+            transition: transform 0.05s ease;
+        }
+
+        .card-btn:active {
+            transform: scale(0.94);
+        }
+
+        .card-btn .rank {
+            font-size: 1em;
+            line-height: 1;
+        }
+
+        .card-btn .tag {
+            position: absolute;
+            bottom: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #6e3f1a;
+            letter-spacing: 0.04em;
+        }
+
+        .card-btn.red {
+            color: var(--red);
+        }
+
+        .card-btn.red .tag {
+            color: var(--red);
+        }
+
+        .card-btn.face {
+            background: linear-gradient(180deg, #fbf8ee 0%, #ddd5b8 100%);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .action-btn.danger {
+            border-color: rgba(192,57,43,0.6);
+            color: #f5c4be;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .meta .field .v {
+            font-size: 18px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        details.about {
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        details.about summary {
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        details.about table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            font-variant-numeric: tabular-nums;
+        }
+
+        details.about th, details.about td {
+            padding: 4px 6px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 12px;
+        }
+
+        details.about th {
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        details.about td:first-child {
+            text-align: left;
+            color: var(--text);
+        }
+
+        /* ===== CAMERA SCAN OVERLAY ===== */
+        #scanOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #000;
+            flex-direction: column;
+        }
+
+        #scanOverlay.active {
+            display: flex;
+        }
+
+        #scanHeader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1002;
+            padding: 12px 16px;
+            padding-top: max(12px, env(safe-area-inset-top));
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #scanStatus {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #scanStatus .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        #scanCloseBtn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        #scanVideoContainer {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #scanVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #scanCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #scanFooter {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1002;
+            padding: 12px 16px;
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+
+        #detectionLog {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 4px 0;
+            scrollbar-width: none;
+        }
+
+        #detectionLog::-webkit-scrollbar {
+            display: none;
+        }
+
+        .det-card {
+            flex-shrink: 0;
+            width: 38px;
+            height: 52px;
+            background: linear-gradient(180deg, #fbf8ee 0%, #ece5cc 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            color: #1a1306;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            animation: cardPop 0.3s ease;
+        }
+
+        .det-card.red-card {
+            color: var(--red);
+        }
+
+        @keyframes cardPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #scanInfo {
+            margin-top: 6px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+        }
+
+        /* Sensitivity slider in scan overlay */
+        #sensitivityRow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            padding: 0 4px;
+        }
+
+        #sensitivityRow label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        #sensitivitySlider {
+            flex: 1;
+            accent-color: var(--gold);
+            height: 4px;
+        }
+
+        #sensitivityVal {
+            font-size: 11px;
+            color: var(--gold);
+            font-weight: 700;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        @media (max-width: 380px) {
+            .top-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .meta {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
-  <video id="cameraVideo" autoplay muted playsinline></video>
+    <video id="cameraVideo" autoplay muted playsinline></video>
 
-  <div class="wrap">
-    <header>
-      <div class="title">BLACKJACK COUNTER</div>
-      <div style="display:flex; gap:6px;">
-        <button id="cameraBtn" class="icon-btn" type="button">Camera</button>
-      </div>
-    </header>
-
-    <div class="top-row">
-      <div class="field">
-        <label>Decks</label>
-        <select id="decksInput">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="4">4</option>
-          <option value="6" selected>6</option>
-          <option value="8">8</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Bankroll (u)</label>
-        <input id="bankrollInput" type="number" min="1" step="1" value="1000" inputmode="numeric">
-      </div>
-      <div class="field">
-        <label>Boxes</label>
-        <input id="boxesInput" type="number" min="1" max="7" step="1" value="2" inputmode="numeric">
-      </div>
-      <div class="field">
-        <label>Min Unit</label>
-        <input id="minBetInput" type="number" min="1" step="1" value="1" inputmode="numeric">
-      </div>
+    <!-- Camera Scan Overlay -->
+    <div id="scanOverlay">
+        <div id="scanHeader">
+            <div id="scanStatus">
+                <span class="dot"></span>
+                <span id="scanStatusText">Scanning...</span>
+            </div>
+            <button id="scanCloseBtn" type="button">Close</button>
+        </div>
+        <div id="scanVideoContainer">
+            <video id="scanVideo" autoplay muted playsinline></video>
+            <canvas id="scanCanvas"></canvas>
+        </div>
+        <div id="scanFooter">
+            <div id="detectionLog"></div>
+            <div id="scanInfo">Hold cards steady in view &middot; Good lighting helps</div>
+            <div id="sensitivityRow">
+                <label>Sensitivity</label>
+                <input type="range" id="sensitivitySlider" min="1" max="10" value="5" step="1">
+                <span id="sensitivityVal">5</span>
+            </div>
+        </div>
     </div>
 
-    <div id="betCard" class="bet-card">
-      <div class="bet-label">Recommended Bet</div>
-      <div class="bet-value"><span id="betPerBox">1</span> u/box</div>
-      <div class="bet-detail">
-        <div><span id="betTotal">2</span> units total</div>
-        <div id="betReason">Off the top — flat bet</div>
-      </div>
+    <div class="wrap">
+        <header>
+            <div class="title">BLACKJACK COUNTER</div>
+            <div style="display:flex; gap:6px;">
+                <button id="scanBtn" class="icon-btn" type="button">Scan</button>
+                <button id="cameraBtn" class="icon-btn" type="button">Camera</button>
+            </div>
+        </header>
+
+        <div class="top-row">
+            <div class="field">
+                <label>Decks</label>
+                <select id="decksInput">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="6" selected>6</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Bankroll (u)</label>
+                <input id="bankrollInput" type="number" min="1" step="1" value="1000" inputmode="numeric">
+            </div>
+            <div class="field">
+                <label>Boxes</label>
+                <input id="boxesInput" type="number" min="1" max="7" step="1" value="2" inputmode="numeric">
+            </div>
+            <div class="field">
+                <label>Min Unit</label>
+                <input id="minBetInput" type="number" min="1" step="1" value="1" inputmode="numeric">
+            </div>
+        </div>
+
+        <div id="betCard" class="bet-card">
+            <div class="bet-label">Recommended Bet</div>
+            <div class="bet-value"><span id="betPerBox">1</span> u/box</div>
+            <div class="bet-detail">
+                <div><span id="betTotal">2</span> units total</div>
+                <div id="betReason">Off the top — flat bet</div>
+            </div>
+        </div>
+
+        <div class="systems" id="systemsPanel"></div>
+
+        <div class="meta">
+            <div class="field"><label>Cards Seen</label><div class="v" id="cardsSeen">0</div></div>
+            <div class="field"><label>Decks Left</label><div class="v" id="decksLeft">6.0</div></div>
+            <div class="field"><label>Pen %</label><div class="v" id="pen">0%</div></div>
+        </div>
+
+        <div class="cards" id="cardGrid"></div>
+
+        <div class="actions">
+            <button class="action-btn" id="undoBtn" type="button">Undo Last</button>
+            <button class="action-btn danger" id="resetBtn" type="button">Reset Shoe</button>
+        </div>
+
+        <details class="about">
+            <summary>System tag values & method</summary>
+            <p style="margin-top:8px;">Bet ramp uses Hi-Lo equivalent True Count (RPC ÷ 2, RAPC ÷ 4) and the active system. Aces marked <em>side</em> are tracked separately and do not affect the running count for that system.</p>
+            <table>
+                <thead>
+                    <tr><th>System</th><th>A</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>T</th></tr>
+                </thead>
+                <tbody id="tagsTable"></tbody>
+            </table>
+            <p style="margin-top:10px; font-size:11px;">Bet ramp (per box, Hi-Lo eq. TC): TC&lt;1→1u, TC&lt;2→1u, TC&lt;3→2u, TC&lt;4→4u, TC&lt;5→6u, TC&lt;6→8u, TC≥6→10u. Capped at ~1% bankroll per box. Total bet = boxes × per-box.</p>
+        </details>
+
+        <details class="about">
+            <summary>How to use</summary>
+            <p style="margin-top:8px;">Tap each card as it is dealt — to you, the dealer, or any other box. The running count and recommended bet update live. Switch active system by tapping it. Reset the shoe when the dealer shuffles.</p>
+            <p style="margin-top:6px;"><strong>Scan mode</strong> opens the rear camera with automatic card detection. Hold cards in view — detected ranks are auto-counted. Adjust sensitivity with the slider. Works best with standard cards on a contrasting background (green felt).</p>
+            <p style="margin-top:6px;"><strong>Camera mode</strong> opens the rear camera as a passive backdrop behind the manual counter.</p>
+        </details>
     </div>
 
-    <div class="systems" id="systemsPanel"></div>
-
-    <div class="meta">
-      <div class="field"><label>Cards Seen</label><div class="v" id="cardsSeen">0</div></div>
-      <div class="field"><label>Decks Left</label><div class="v" id="decksLeft">6.0</div></div>
-      <div class="field"><label>Pen %</label><div class="v" id="pen">0%</div></div>
-    </div>
-
-    <div class="cards" id="cardGrid"></div>
-
-    <div class="actions">
-      <button class="action-btn" id="undoBtn" type="button">Undo Last</button>
-      <button class="action-btn danger" id="resetBtn" type="button">Reset Shoe</button>
-    </div>
-
-    <details class="about">
-      <summary>System tag values & method</summary>
-      <p style="margin-top:8px;">Bet ramp uses Hi-Lo equivalent True Count (RPC ÷ 2, RAPC ÷ 4) and the active system. Aces marked <em>side</em> are tracked separately and do not affect the running count for that system.</p>
-      <table>
-        <thead>
-          <tr><th>System</th><th>A</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>T</th></tr>
-        </thead>
-        <tbody id="tagsTable"></tbody>
-      </table>
-      <p style="margin-top:10px; font-size:11px;">Bet ramp (per box, Hi-Lo eq. TC): TC&lt;1→1u, TC&lt;2→1u, TC&lt;3→2u, TC&lt;4→4u, TC&lt;5→6u, TC&lt;6→8u, TC≥6→10u. Capped at ~1% bankroll per box. Total bet = boxes × per-box.</p>
-    </details>
-
-    <details class="about">
-      <summary>How to use</summary>
-      <p style="margin-top:8px;">Tap each card as it is dealt — to you, the dealer, or any other box. The running count and recommended bet update live. Switch active system by tapping it. Reset the shoe when the dealer shuffles.</p>
-      <p style="margin-top:6px;">Camera mode opens the rear camera as a backdrop so you can keep the table in view while tapping. There is no automatic card recognition.</p>
-    </details>
-  </div>
-
-  <script>
+    <script>
+    /* ========================================================================
+       EXISTING CARD COUNTER LOGIC
+       ======================================================================== */
     const SYSTEMS = {
-      five: {
-        name: 'Five Count',
-        level: 1,
-        sideAces: false,
-        tags: { A: 0, '2': 0, '3': 0, '4': 0, '5': -1, '6': 0, '7': 0, '8': 0, '9': 0, T: 0 },
-        balanced: false,
-        note: 'Tracks 5s only — historical/teaching.'
-      },
-      plusMinus: {
-        name: 'Plus-Minus',
-        level: 1,
-        sideAces: false,
-        tags: { A: -1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 0, '8': 0, '9': 0, T: -1 },
-        balanced: true
-      },
-      rpc: {
-        name: 'Point Count (RPC)',
-        level: 2,
-        sideAces: false,
-        tags: { A: -2, '2': 1, '3': 2, '4': 2, '5': 2, '6': 2, '7': 1, '8': 0, '9': 0, T: -2 },
-        balanced: true
-      },
-      rapc: {
-        name: 'Advanced (RAPC)',
-        level: 4,
-        sideAces: true,
-        tags: { A: 0, '2': 2, '3': 2, '4': 3, '5': 4, '6': 2, '7': 1, '8': 0, '9': -2, T: -3 },
-        balanced: true
-      }
+        five: {
+            name: 'Five Count',
+            level: 1,
+            sideAces: false,
+            tags: { A: 0, '2': 0, '3': 0, '4': 0, '5': -1, '6': 0, '7': 0, '8': 0, '9': 0, T: 0 },
+            balanced: false,
+            note: 'Tracks 5s only — historical/teaching.'
+        },
+        plusMinus: {
+            name: 'Plus-Minus',
+            level: 1,
+            sideAces: false,
+            tags: { A: -1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 0, '8': 0, '9': 0, T: -1 },
+            balanced: true
+        },
+        rpc: {
+            name: 'Point Count (RPC)',
+            level: 2,
+            sideAces: false,
+            tags: { A: -2, '2': 1, '3': 2, '4': 2, '5': 2, '6': 2, '7': 1, '8': 0, '9': 0, T: -2 },
+            balanced: true
+        },
+        rapc: {
+            name: 'Advanced (RAPC)',
+            level: 4,
+            sideAces: true,
+            tags: { A: 0, '2': 2, '3': 2, '4': 3, '5': 4, '6': 2, '7': 1, '8': 0, '9': -2, T: -3 },
+            balanced: true
+        }
     };
 
     const RANK_LIST = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     const RANK_TO_TAG = { 'A':'A','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9','10':'T','J':'T','Q':'T','K':'T' };
 
     const state = {
-      decks: 6,
-      bankroll: 1000,
-      boxes: 2,
-      minBet: 1,
-      activeSystem: 'plusMinus',
-      seen: [],
-      cameraOn: false,
-      cameraStream: null
+        decks: 6,
+        bankroll: 1000,
+        boxes: 2,
+        minBet: 1,
+        activeSystem: 'plusMinus',
+        seen: [],
+        cameraOn: false,
+        cameraStream: null
     };
 
     const $ = id => document.getElementById(id);
@@ -436,285 +734,897 @@
     function totalCards() { return state.decks * 52; }
     function cardsRemaining() { return totalCards() - state.seen.length; }
     function decksRemaining() { return Math.max(0.25, cardsRemaining() / 52); }
-
-    function aceCount() {
-      return state.seen.filter(r => r === 'A').length;
-    }
+    function aceCount() { return state.seen.filter(r => r === 'A').length; }
 
     function runningCount(systemKey) {
-      const sys = SYSTEMS[systemKey];
-      let rc = 0;
-      for (const rank of state.seen) {
-        const tagKey = RANK_TO_TAG[rank];
-        if (sys.sideAces && tagKey === 'A') continue;
-        rc += sys.tags[tagKey];
-      }
-      return rc;
+        const sys = SYSTEMS[systemKey];
+        let rc = 0;
+        for (const rank of state.seen) {
+            const tagKey = RANK_TO_TAG[rank];
+            if (sys.sideAces && tagKey === 'A') continue;
+            rc += sys.tags[tagKey];
+        }
+        return rc;
     }
 
     function trueCount(systemKey) {
-      const rc = runningCount(systemKey);
-      return rc / decksRemaining();
+        return runningCount(systemKey) / decksRemaining();
     }
 
     function hiLoEquivTC(systemKey) {
-      const tc = trueCount(systemKey);
-      return tc / SYSTEMS[systemKey].level;
+        return trueCount(systemKey) / SYSTEMS[systemKey].level;
     }
 
     function suggestPerBox(hlTC) {
-      if (hlTC < 1) return state.minBet;
-      if (hlTC < 2) return state.minBet;
-      if (hlTC < 3) return state.minBet * 2;
-      if (hlTC < 4) return state.minBet * 4;
-      if (hlTC < 5) return state.minBet * 6;
-      if (hlTC < 6) return state.minBet * 8;
-      return state.minBet * 10;
+        if (hlTC < 1) return state.minBet;
+        if (hlTC < 2) return state.minBet;
+        if (hlTC < 3) return state.minBet * 2;
+        if (hlTC < 4) return state.minBet * 4;
+        if (hlTC < 5) return state.minBet * 6;
+        if (hlTC < 6) return state.minBet * 8;
+        return state.minBet * 10;
     }
 
     function recommendBet() {
-      const sys = SYSTEMS[state.activeSystem];
-      let perBox, reason;
+        const sys = SYSTEMS[state.activeSystem];
+        let perBox, reason;
 
-      if (state.activeSystem === 'five') {
-        const fivesSeen = state.seen.filter(r => r === '5').length;
-        const totalFives = state.decks * 4;
-        const fivesLeft = totalFives - fivesSeen;
-        const expectedFives = (cardsRemaining() / 13);
-        const ratio = fivesLeft / Math.max(1, expectedFives);
-        if (ratio < 0.5 && state.seen.length > totalCards() * 0.25) {
-          perBox = state.minBet * 4;
-          reason = `Few 5s left (${fivesLeft} of ${totalFives}) — advantage`;
-        } else if (ratio < 0.8 && state.seen.length > totalCards() * 0.25) {
-          perBox = state.minBet * 2;
-          reason = `${fivesLeft} 5s remaining — slight edge`;
+        if (state.activeSystem === 'five') {
+            const fivesSeen = state.seen.filter(r => r === '5').length;
+            const totalFives = state.decks * 4;
+            const fivesLeft = totalFives - fivesSeen;
+            const expectedFives = (cardsRemaining() / 13);
+            const ratio = fivesLeft / Math.max(1, expectedFives);
+
+            if (ratio < 0.5 && state.seen.length > totalCards() * 0.25) {
+                perBox = state.minBet * 4;
+                reason = `Few 5s left (${fivesLeft} of ${totalFives}) — advantage`;
+            } else if (ratio < 0.8 && state.seen.length > totalCards() * 0.25) {
+                perBox = state.minBet * 2;
+                reason = `${fivesLeft} 5s remaining — slight edge`;
+            } else {
+                perBox = state.minBet;
+                reason = `${fivesLeft} 5s remaining — flat bet`;
+            }
         } else {
-          perBox = state.minBet;
-          reason = `${fivesLeft} 5s remaining — flat bet`;
+            const hlTC = hiLoEquivTC(state.activeSystem);
+            perBox = suggestPerBox(hlTC);
+            if (state.seen.length === 0) {
+                reason = 'Off the top — flat bet';
+            } else if (hlTC < 1) {
+                reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — minimum`;
+            } else {
+                reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — ramp up`;
+            }
         }
-      } else {
-        const hlTC = hiLoEquivTC(state.activeSystem);
-        perBox = suggestPerBox(hlTC);
-        if (state.seen.length === 0) {
-          reason = 'Off the top — flat bet';
-        } else if (hlTC < 1) {
-          reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — minimum`;
-        } else {
-          reason = `TC ${hlTC.toFixed(1)} (Hi-Lo eq.) — ramp up`;
-        }
-      }
 
-      const bankrollCapPerBox = Math.max(1, Math.floor(state.bankroll * 0.01));
-      perBox = Math.min(perBox, bankrollCapPerBox);
-      perBox = Math.max(state.minBet, perBox);
-
-      const total = perBox * state.boxes;
-      return { perBox, total, reason };
+        const bankrollCapPerBox = Math.max(1, Math.floor(state.bankroll * 0.01));
+        perBox = Math.min(perBox, bankrollCapPerBox);
+        perBox = Math.max(state.minBet, perBox);
+        const total = perBox * state.boxes;
+        return { perBox, total, reason };
     }
 
     function buildSystemsPanel() {
-      const panel = $('systemsPanel');
-      panel.innerHTML = '';
-      for (const key of Object.keys(SYSTEMS)) {
-        const sys = SYSTEMS[key];
-        const btn = document.createElement('button');
-        btn.className = 'sys' + (key === state.activeSystem ? ' active' : '');
-        btn.dataset.key = key;
-        btn.type = 'button';
-        btn.innerHTML = `
-          <div class="sys-name">${sys.name}<span style="color:var(--text-dim); font-weight:400; font-size:10px;"> · L${sys.level}</span></div>
-          <div class="sys-counts">
-            <span>RC <strong data-rc>0</strong></span>
-            <span>TC <strong data-tc>0.0</strong></span>
-            ${sys.sideAces ? '<span>A <strong data-a>0</strong></span>' : ''}
-          </div>
-        `;
-        btn.addEventListener('click', () => {
-          state.activeSystem = key;
-          buildSystemsPanel();
-          render();
-        });
-        panel.appendChild(btn);
-      }
+        const panel = $('systemsPanel');
+        panel.innerHTML = '';
+        for (const key of Object.keys(SYSTEMS)) {
+            const sys = SYSTEMS[key];
+            const btn = document.createElement('button');
+            btn.className = 'sys' + (key === state.activeSystem ? ' active' : '');
+            btn.dataset.key = key;
+            btn.type = 'button';
+            btn.innerHTML = `
+                <div class="sys-name">${sys.name}<span style="color:var(--text-dim); font-weight:400; font-size:10px;"> · L${sys.level}</span></div>
+                <div class="sys-counts">
+                    <span>RC <strong data-rc>0</strong></span>
+                    <span>TC <strong data-tc>0.0</strong></span>
+                    ${sys.sideAces ? '<span>A <strong data-a>0</strong></span>' : ''}
+                </div>
+            `;
+            btn.addEventListener('click', () => {
+                state.activeSystem = key;
+                buildSystemsPanel();
+                render();
+            });
+            panel.appendChild(btn);
+        }
     }
 
     function buildCardGrid() {
-      const grid = $('cardGrid');
-      grid.innerHTML = '';
-      const sys = SYSTEMS[state.activeSystem];
-      for (const rank of RANK_LIST) {
-        const tagKey = RANK_TO_TAG[rank];
-        const tag = sys.tags[tagKey];
-        const isFace = rank === 'J' || rank === 'Q' || rank === 'K';
-        const btn = document.createElement('button');
-        btn.className = 'card-btn' + (isFace ? ' face' : '');
-        btn.type = 'button';
-        btn.dataset.rank = rank;
-        const showTag = !(sys.sideAces && rank === 'A');
-        btn.innerHTML = `
-          <span class="rank">${rank}</span>
-          <span class="tag">${showTag ? (tag > 0 ? '+' + tag : tag) : 'side'}</span>
-        `;
-        btn.addEventListener('click', () => addCard(rank));
-        grid.appendChild(btn);
-      }
+        const grid = $('cardGrid');
+        grid.innerHTML = '';
+        const sys = SYSTEMS[state.activeSystem];
+        for (const rank of RANK_LIST) {
+            const tagKey = RANK_TO_TAG[rank];
+            const tag = sys.tags[tagKey];
+            const isFace = rank === 'J' || rank === 'Q' || rank === 'K';
+            const btn = document.createElement('button');
+            btn.className = 'card-btn' + (isFace ? ' face' : '');
+            btn.type = 'button';
+            btn.dataset.rank = rank;
+            const showTag = !(sys.sideAces && rank === 'A');
+            btn.innerHTML = `
+                <span class="rank">${rank}</span>
+                <span class="tag">${showTag ? (tag > 0 ? '+' + tag : tag) : 'side'}</span>
+            `;
+            btn.addEventListener('click', () => addCard(rank));
+            grid.appendChild(btn);
+        }
     }
 
     function buildTagsTable() {
-      const tbody = $('tagsTable');
-      tbody.innerHTML = '';
-      for (const key of Object.keys(SYSTEMS)) {
-        const sys = SYSTEMS[key];
-        const fmt = (v, isAce) => sys.sideAces && isAce ? 'side' : (v > 0 ? '+' + v : v);
-        tbody.innerHTML += `
-          <tr>
-            <td>${sys.name}</td>
-            <td>${fmt(sys.tags.A, true)}</td>
-            <td>${fmt(sys.tags['2'])}</td>
-            <td>${fmt(sys.tags['3'])}</td>
-            <td>${fmt(sys.tags['4'])}</td>
-            <td>${fmt(sys.tags['5'])}</td>
-            <td>${fmt(sys.tags['6'])}</td>
-            <td>${fmt(sys.tags['7'])}</td>
-            <td>${fmt(sys.tags['8'])}</td>
-            <td>${fmt(sys.tags['9'])}</td>
-            <td>${fmt(sys.tags.T)}</td>
-          </tr>
-        `;
-      }
+        const tbody = $('tagsTable');
+        tbody.innerHTML = '';
+        for (const key of Object.keys(SYSTEMS)) {
+            const sys = SYSTEMS[key];
+            const fmt = (v, isAce) => sys.sideAces && isAce ? 'side' : (v > 0 ? '+' + v : v);
+            tbody.innerHTML += `
+                <tr>
+                    <td>${sys.name}</td>
+                    <td>${fmt(sys.tags.A, true)}</td>
+                    <td>${fmt(sys.tags['2'])}</td>
+                    <td>${fmt(sys.tags['3'])}</td>
+                    <td>${fmt(sys.tags['4'])}</td>
+                    <td>${fmt(sys.tags['5'])}</td>
+                    <td>${fmt(sys.tags['6'])}</td>
+                    <td>${fmt(sys.tags['7'])}</td>
+                    <td>${fmt(sys.tags['8'])}</td>
+                    <td>${fmt(sys.tags['9'])}</td>
+                    <td>${fmt(sys.tags.T)}</td>
+                </tr>
+            `;
+        }
     }
 
     function addCard(rank) {
-      if (state.seen.length >= totalCards()) return;
-      state.seen.push(rank);
-      saveState();
-      render();
+        if (state.seen.length >= totalCards()) return;
+        state.seen.push(rank);
+        saveState();
+        render();
     }
 
     function undo() {
-      if (state.seen.length === 0) return;
-      state.seen.pop();
-      saveState();
-      render();
+        if (state.seen.length === 0) return;
+        state.seen.pop();
+        saveState();
+        render();
     }
 
     function reset() {
-      if (state.seen.length === 0 || confirm('Reset the shoe?')) {
-        state.seen = [];
-        saveState();
-        render();
-      }
+        if (state.seen.length === 0 || confirm('Reset the shoe?')) {
+            state.seen = [];
+            saveState();
+            render();
+        }
     }
 
     function render() {
-      const dr = decksRemaining();
-      $('cardsSeen').textContent = state.seen.length;
-      $('decksLeft').textContent = dr.toFixed(1);
-      $('pen').textContent = Math.round((state.seen.length / totalCards()) * 100) + '%';
+        const dr = decksRemaining();
+        $('cardsSeen').textContent = state.seen.length;
+        $('decksLeft').textContent = dr.toFixed(1);
+        $('pen').textContent = Math.round((state.seen.length / totalCards()) * 100) + '%';
 
-      document.querySelectorAll('.sys').forEach(node => {
-        const key = node.dataset.key;
-        const sys = SYSTEMS[key];
-        const rc = runningCount(key);
-        const tc = trueCount(key);
-        node.querySelector('[data-rc]').textContent = rc > 0 ? '+' + rc : rc;
-        node.querySelector('[data-tc]').textContent = tc.toFixed(1);
-        if (sys.sideAces) {
-          const aceEl = node.querySelector('[data-a]');
-          if (aceEl) aceEl.textContent = aceCount();
-        }
-        node.classList.toggle('active', key === state.activeSystem);
-      });
+        document.querySelectorAll('.sys').forEach(node => {
+            const key = node.dataset.key;
+            const sys = SYSTEMS[key];
+            const rc = runningCount(key);
+            const tc = trueCount(key);
+            node.querySelector('[data-rc]').textContent = rc > 0 ? '+' + rc : rc;
+            node.querySelector('[data-tc]').textContent = tc.toFixed(1);
+            if (sys.sideAces) {
+                const aceEl = node.querySelector('[data-a]');
+                if (aceEl) aceEl.textContent = aceCount();
+            }
+            node.classList.toggle('active', key === state.activeSystem);
+        });
 
-      const bet = recommendBet();
-      $('betPerBox').textContent = bet.perBox;
-      $('betTotal').textContent = bet.total;
-      $('betReason').textContent = bet.reason;
-      $('betCard').classList.toggle('advantage', bet.perBox > state.minBet);
+        const bet = recommendBet();
+        $('betPerBox').textContent = bet.perBox;
+        $('betTotal').textContent = bet.total;
+        $('betReason').textContent = bet.reason;
+        $('betCard').classList.toggle('advantage', bet.perBox > state.minBet);
     }
 
     function saveState() {
-      try {
-        localStorage.setItem('bj-counter', JSON.stringify({
-          decks: state.decks, bankroll: state.bankroll, boxes: state.boxes,
-          minBet: state.minBet, activeSystem: state.activeSystem, seen: state.seen
-        }));
-      } catch (e) {}
+        try {
+            localStorage.setItem('bj-counter', JSON.stringify({
+                decks: state.decks,
+                bankroll: state.bankroll,
+                boxes: state.boxes,
+                minBet: state.minBet,
+                activeSystem: state.activeSystem,
+                seen: state.seen
+            }));
+        } catch (e) {}
     }
 
     function loadState() {
-      try {
-        const raw = localStorage.getItem('bj-counter');
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        Object.assign(state, s);
-      } catch (e) {}
+        try {
+            const raw = localStorage.getItem('bj-counter');
+            if (!raw) return;
+            const s = JSON.parse(raw);
+            Object.assign(state, s);
+        } catch (e) {}
     }
 
     async function toggleCamera() {
-      const btn = $('cameraBtn');
-      if (state.cameraOn) {
-        if (state.cameraStream) state.cameraStream.getTracks().forEach(t => t.stop());
-        state.cameraStream = null;
-        state.cameraOn = false;
-        document.body.classList.remove('camera-on');
-        btn.classList.remove('on');
-        btn.textContent = 'Camera';
-        return;
-      }
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false
-        });
-        state.cameraStream = stream;
-        $('cameraVideo').srcObject = stream;
-        state.cameraOn = true;
-        document.body.classList.add('camera-on');
-        btn.classList.add('on');
-        btn.textContent = 'Camera On';
-      } catch (err) {
-        alert('Camera unavailable: ' + (err.message || err.name));
-      }
+        const btn = $('cameraBtn');
+        if (state.cameraOn) {
+            if (state.cameraStream) state.cameraStream.getTracks().forEach(t => t.stop());
+            state.cameraStream = null;
+            state.cameraOn = false;
+            document.body.classList.remove('camera-on');
+            btn.classList.remove('on');
+            btn.textContent = 'Camera';
+            return;
+        }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
+            state.cameraStream = stream;
+            $('cameraVideo').srcObject = stream;
+            state.cameraOn = true;
+            document.body.classList.add('camera-on');
+            btn.classList.add('on');
+            btn.textContent = 'Camera On';
+        } catch (err) {
+            alert('Camera unavailable: ' + (err.message || err.name));
+        }
     }
 
+    /* ========================================================================
+       CARD DETECTION ENGINE
+       ======================================================================== */
+    class CardDetector {
+        constructor() {
+            this.video = $('scanVideo');
+            this.canvas = $('scanCanvas');
+            this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+            this.workCanvas = document.createElement('canvas');
+            this.workCtx = this.workCanvas.getContext('2d', { willReadFrequently: true });
+            this.running = false;
+            this.stream = null;
+            this.frameId = null;
+            this.lastDetections = [];          // current frame detections
+            this.trackedCards = [];             // cards being tracked across frames
+            this.countedPositions = [];         // recently counted card positions with timestamps
+            this.templates = {};                // rank templates for matching
+            this.sensitivity = 5;              // 1-10 scale
+            this.frameCount = 0;
+            this.processEveryN = 3;            // process every Nth frame for performance
+
+            // Processing dimensions (downscale for speed)
+            this.procW = 320;
+            this.procH = 240;
+
+            this.generateTemplates();
+        }
+
+        /* ---- Template Generation ---- */
+        generateTemplates() {
+            // Pre-render each rank character as a binary template
+            const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+            const tw = 32, th = 44;
+
+            for (const rank of ranks) {
+                const tc = document.createElement('canvas');
+                tc.width = tw;
+                tc.height = th;
+                const tctx = tc.getContext('2d');
+
+                // White background
+                tctx.fillStyle = '#fff';
+                tctx.fillRect(0, 0, tw, th);
+
+                // Draw rank character in black
+                tctx.fillStyle = '#000';
+                tctx.textAlign = 'center';
+                tctx.textBaseline = 'middle';
+
+                if (rank === '10') {
+                    tctx.font = 'bold 22px Arial, sans-serif';
+                } else {
+                    tctx.font = 'bold 28px Arial, sans-serif';
+                }
+                tctx.fillText(rank, tw / 2, th / 2);
+
+                // Extract binary pixel data
+                const imgData = tctx.getImageData(0, 0, tw, th);
+                const binary = new Uint8Array(tw * th);
+                for (let i = 0; i < tw * th; i++) {
+                    binary[i] = imgData.data[i * 4] < 128 ? 1 : 0; // dark pixel = 1
+                }
+
+                this.templates[rank] = {
+                    canvas: tc,
+                    binary,
+                    width: tw,
+                    height: th,
+                    pixelCount: binary.reduce((a, b) => a + b, 0) // number of dark pixels
+                };
+            }
+        }
+
+        /* ---- Start / Stop ---- */
+        async start() {
+            if (this.running) return;
+            try {
+                this.stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                this.video.srcObject = this.stream;
+                await this.video.play();
+
+                // Wait for video dimensions
+                await new Promise(resolve => {
+                    const check = () => {
+                        if (this.video.videoWidth > 0) resolve();
+                        else requestAnimationFrame(check);
+                    };
+                    check();
+                });
+
+                this.canvas.width = this.video.videoWidth;
+                this.canvas.height = this.video.videoHeight;
+                this.workCanvas.width = this.procW;
+                this.workCanvas.height = this.procH;
+
+                this.running = true;
+                this.trackedCards = [];
+                this.countedPositions = [];
+                this.frameCount = 0;
+                this.processLoop();
+
+                $('scanOverlay').classList.add('active');
+                $('scanStatusText').textContent = 'Scanning...';
+            } catch (err) {
+                alert('Camera unavailable: ' + (err.message || err.name));
+            }
+        }
+
+        stop() {
+            this.running = false;
+            if (this.frameId) {
+                cancelAnimationFrame(this.frameId);
+                this.frameId = null;
+            }
+            if (this.stream) {
+                this.stream.getTracks().forEach(t => t.stop());
+                this.stream = null;
+            }
+            $('scanOverlay').classList.remove('active');
+        }
+
+        /* ---- Main Processing Loop ---- */
+        processLoop() {
+            if (!this.running) return;
+
+            this.frameCount++;
+
+            // Always draw clean video frame to overlay canvas
+            this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+
+            // Process every Nth frame for detection
+            if (this.frameCount % this.processEveryN === 0) {
+                this.detectCards();
+            }
+
+            // Draw current detections
+            this.drawDetections();
+
+            this.frameId = requestAnimationFrame(() => this.processLoop());
+        }
+
+        /* ---- Card Detection Pipeline ---- */
+        detectCards() {
+            const vw = this.video.videoWidth;
+            const vh = this.video.videoHeight;
+            if (vw === 0 || vh === 0) return;
+
+            // Draw downscaled frame to work canvas
+            this.workCtx.drawImage(this.video, 0, 0, this.procW, this.procH);
+            const imgData = this.workCtx.getImageData(0, 0, this.procW, this.procH);
+            const pixels = imgData.data;
+
+            // Step 1: Find bright rectangular regions (potential cards)
+            const regions = this.findCardRegions(pixels, this.procW, this.procH);
+
+            // Step 2: For each region, try to classify the rank
+            const detections = [];
+            const scaleX = vw / this.procW;
+            const scaleY = vh / this.procH;
+
+            for (const region of regions) {
+                const classification = this.classifyRegion(region);
+                if (classification) {
+                    detections.push({
+                        x: Math.round(region.x * scaleX),
+                        y: Math.round(region.y * scaleY),
+                        w: Math.round(region.w * scaleX),
+                        h: Math.round(region.h * scaleY),
+                        rank: classification.rank,
+                        confidence: classification.confidence,
+                        cx: Math.round((region.x + region.w / 2) * scaleX),
+                        cy: Math.round((region.y + region.h / 2) * scaleY)
+                    });
+                }
+            }
+
+            this.lastDetections = detections;
+
+            // Step 3: Update tracking and auto-count
+            this.updateTracking(detections);
+        }
+
+        /* ---- Find Card Regions ---- */
+        findCardRegions(pixels, w, h) {
+            // Adaptive threshold based on sensitivity
+            const baseThreshold = 160 + (10 - this.sensitivity) * 8; // sensitivity 1=240, 10=168
+            const minArea = 400 - this.sensitivity * 20;  // min pixels for a card region
+            const minW = 20;
+            const minH = 25;
+            const maxW = this.procW * 0.6;
+            const maxH = this.procH * 0.6;
+
+            // Create binary mask: bright pixels = 1
+            const mask = new Uint8Array(w * h);
+            for (let i = 0; i < w * h; i++) {
+                const r = pixels[i * 4];
+                const g = pixels[i * 4 + 1];
+                const b = pixels[i * 4 + 2];
+                // Card detection: look for bright, low-saturation pixels (white/cream cards)
+                const brightness = (r + g + b) / 3;
+                const maxC = Math.max(r, g, b);
+                const minC = Math.min(r, g, b);
+                const saturation = maxC > 0 ? (maxC - minC) / maxC : 0;
+
+                mask[i] = (brightness > baseThreshold && saturation < 0.35) ? 1 : 0;
+            }
+
+            // Simple morphological close (dilate then erode) to fill gaps
+            const dilated = this.dilate(mask, w, h, 2);
+            const closed = this.erode(dilated, w, h, 1);
+
+            // Connected component labeling
+            const { labels, count } = this.labelComponents(closed, w, h);
+
+            // Extract bounding boxes for each component
+            const regions = [];
+            for (let label = 1; label <= count; label++) {
+                let minX = w, minY = h, maxX = 0, maxY = 0;
+                let area = 0;
+
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        if (labels[y * w + x] === label) {
+                            area++;
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+
+                const rw = maxX - minX + 1;
+                const rh = maxY - minY + 1;
+                const aspectRatio = rw / rh;
+                const fillRatio = area / (rw * rh);
+
+                // Filter: card-like dimensions and fill ratio
+                if (area >= minArea && rw >= minW && rh >= minH &&
+                    rw <= maxW && rh <= maxH &&
+                    aspectRatio > 0.45 && aspectRatio < 0.95 &&
+                    fillRatio > 0.6) {
+                    regions.push({ x: minX, y: minY, w: rw, h: rh, area, fillRatio, label });
+                }
+            }
+
+            // Sort by area (largest first) and limit
+            regions.sort((a, b) => b.area - a.area);
+            return regions.slice(0, 8);
+        }
+
+        /* ---- Morphological Operations ---- */
+        dilate(mask, w, h, radius) {
+            const result = new Uint8Array(w * h);
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let val = 0;
+                    for (let dy = -radius; dy <= radius && !val; dy++) {
+                        for (let dx = -radius; dx <= radius && !val; dx++) {
+                            const nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < w && ny >= 0 && ny < h && mask[ny * w + nx]) {
+                                val = 1;
+                            }
+                        }
+                    }
+                    result[y * w + x] = val;
+                }
+            }
+            return result;
+        }
+
+        erode(mask, w, h, radius) {
+            const result = new Uint8Array(w * h);
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let val = 1;
+                    for (let dy = -radius; dy <= radius && val; dy++) {
+                        for (let dx = -radius; dx <= radius && val; dx++) {
+                            const nx = x + dx, ny = y + dy;
+                            if (nx < 0 || nx >= w || ny < 0 || ny >= h || !mask[ny * w + nx]) {
+                                val = 0;
+                            }
+                        }
+                    }
+                    result[y * w + x] = val;
+                }
+            }
+            return result;
+        }
+
+        /* ---- Connected Component Labeling (Two-pass) ---- */
+        labelComponents(mask, w, h) {
+            const labels = new Int32Array(w * h);
+            const parent = [0]; // Union-Find parent array, index 0 = background
+            let nextLabel = 1;
+
+            // First pass
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const idx = y * w + x;
+                    if (!mask[idx]) continue;
+
+                    const leftLabel = x > 0 ? labels[idx - 1] : 0;
+                    const topLabel = y > 0 ? labels[idx - w] : 0;
+
+                    if (leftLabel === 0 && topLabel === 0) {
+                        labels[idx] = nextLabel;
+                        parent.push(nextLabel);
+                        nextLabel++;
+                    } else if (leftLabel !== 0 && topLabel === 0) {
+                        labels[idx] = leftLabel;
+                    } else if (leftLabel === 0 && topLabel !== 0) {
+                        labels[idx] = topLabel;
+                    } else {
+                        // Both have labels — use the smaller one and union
+                        const minL = Math.min(this.find(parent, leftLabel), this.find(parent, topLabel));
+                        labels[idx] = minL;
+                        this.union(parent, leftLabel, topLabel);
+                    }
+                }
+            }
+
+            // Build label map: flatten to root labels
+            const labelMap = new Map();
+            let finalCount = 0;
+            const remap = new Int32Array(nextLabel);
+
+            for (let i = 1; i < nextLabel; i++) {
+                const root = this.find(parent, i);
+                if (!labelMap.has(root)) {
+                    finalCount++;
+                    labelMap.set(root, finalCount);
+                }
+                remap[i] = labelMap.get(root);
+            }
+
+            // Second pass: relabel
+            for (let i = 0; i < labels.length; i++) {
+                if (labels[i] > 0) {
+                    labels[i] = remap[labels[i]];
+                }
+            }
+
+            return { labels, count: finalCount };
+        }
+
+        find(parent, i) {
+            while (parent[i] !== i) {
+                parent[i] = parent[parent[i]]; // path compression
+                i = parent[i];
+            }
+            return i;
+        }
+
+        union(parent, a, b) {
+            const rootA = this.find(parent, a);
+            const rootB = this.find(parent, b);
+            if (rootA !== rootB) {
+                parent[Math.max(rootA, rootB)] = Math.min(rootA, rootB);
+            }
+        }
+
+        /* ---- Rank Classification ---- */
+        classifyRegion(region) {
+            // Extract the top-left corner of the detected card from the work canvas
+            // The rank indicator is typically in the top-left ~20% width and ~30% height
+            const cornerW = Math.max(8, Math.round(region.w * 0.28));
+            const cornerH = Math.max(10, Math.round(region.h * 0.30));
+            const cornerX = region.x + Math.round(region.w * 0.02);
+            const cornerY = region.y + Math.round(region.h * 0.02);
+
+            // Bounds check
+            if (cornerX + cornerW > this.procW || cornerY + cornerH > this.procH) return null;
+            if (cornerW < 6 || cornerH < 8) return null;
+
+            // Get corner image data
+            const cornerData = this.workCtx.getImageData(cornerX, cornerY, cornerW, cornerH);
+
+            // Resize corner to template size (32x44) using nearest neighbor
+            const tw = 32, th = 44;
+            const resized = this.resizeRegion(cornerData, cornerW, cornerH, tw, th);
+
+            // Binarize: find dark pixels on light background
+            const binary = new Uint8Array(tw * th);
+            let totalBright = 0;
+            for (let i = 0; i < tw * th; i++) {
+                const r = resized[i * 4];
+                const g = resized[i * 4 + 1];
+                const b = resized[i * 4 + 2];
+                const gray = (r + g + b) / 3;
+                totalBright += gray;
+            }
+            const avgBright = totalBright / (tw * th);
+            const binThreshold = avgBright * 0.6; // adaptive threshold
+
+            let darkCount = 0;
+            for (let i = 0; i < tw * th; i++) {
+                const r = resized[i * 4];
+                const g = resized[i * 4 + 1];
+                const b = resized[i * 4 + 2];
+                const gray = (r + g + b) / 3;
+                binary[i] = gray < binThreshold ? 1 : 0;
+                if (binary[i]) darkCount++;
+            }
+
+            // If too few or too many dark pixels, skip
+            const darkRatio = darkCount / (tw * th);
+            if (darkRatio < 0.03 || darkRatio > 0.5) return null;
+
+            // Match against all templates using normalized cross-correlation
+            let bestRank = null;
+            let bestScore = -1;
+
+            for (const [rank, tmpl] of Object.entries(this.templates)) {
+                const score = this.matchTemplate(binary, tmpl.binary, tw, th);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestRank = rank;
+                }
+            }
+
+            // Confidence threshold (adjusted by sensitivity)
+            const confThreshold = 0.35 - (this.sensitivity - 5) * 0.02;
+            if (bestScore < confThreshold) return null;
+
+            return { rank: bestRank, confidence: bestScore };
+        }
+
+        /* ---- Resize using nearest neighbor ---- */
+        resizeRegion(imgData, srcW, srcH, dstW, dstH) {
+            const result = new Uint8Array(dstW * dstH * 4);
+            const xRatio = srcW / dstW;
+            const yRatio = srcH / dstH;
+
+            for (let y = 0; y < dstH; y++) {
+                for (let x = 0; x < dstW; x++) {
+                    const srcX = Math.floor(x * xRatio);
+                    const srcY = Math.floor(y * yRatio);
+                    const srcIdx = (srcY * srcW + srcX) * 4;
+                    const dstIdx = (y * dstW + x) * 4;
+                    result[dstIdx] = imgData.data[srcIdx];
+                    result[dstIdx + 1] = imgData.data[srcIdx + 1];
+                    result[dstIdx + 2] = imgData.data[srcIdx + 2];
+                    result[dstIdx + 3] = 255;
+                }
+            }
+            return result;
+        }
+
+        /* ---- Template Matching (IoU-like score) ---- */
+        matchTemplate(candidate, template, w, h) {
+            let intersection = 0;
+            let unionCount = 0;
+
+            for (let i = 0; i < w * h; i++) {
+                const c = candidate[i];
+                const t = template[i];
+                if (c && t) intersection++;
+                if (c || t) unionCount++;
+            }
+
+            if (unionCount === 0) return 0;
+            return intersection / unionCount; // IoU score
+        }
+
+        /* ---- Tracking & De-duplication ---- */
+        updateTracking(detections) {
+            const now = Date.now();
+            const distThreshold = 80; // pixels — how close counts as "same position"
+            const cooldownMs = 2000;  // don't re-count same position within 2s
+
+            // Clean old counted positions
+            this.countedPositions = this.countedPositions.filter(p => now - p.time < cooldownMs);
+
+            for (const det of detections) {
+                // Check if this detection is near a recently counted position
+                const isDuplicate = this.countedPositions.some(p => {
+                    const dist = Math.hypot(det.cx - p.cx, det.cy - p.cy);
+                    return dist < distThreshold && det.rank === p.rank;
+                });
+
+                if (!isDuplicate && det.confidence > 0.3) {
+                    // New card detected — count it!
+                    addCard(det.rank);
+                    this.addToDetectionLog(det.rank);
+
+                    // Record position to prevent re-counting
+                    this.countedPositions.push({
+                        cx: det.cx,
+                        cy: det.cy,
+                        rank: det.rank,
+                        time: now
+                    });
+
+                    $('scanStatusText').textContent = `Detected: ${det.rank} (${Math.round(det.confidence * 100)}%)`;
+                }
+            }
+
+            if (detections.length === 0) {
+                $('scanStatusText').textContent = 'Scanning...';
+            }
+        }
+
+        /* ---- Detection Log (visual feedback in overlay footer) ---- */
+        addToDetectionLog(rank) {
+            const log = $('detectionLog');
+            const card = document.createElement('div');
+            card.className = 'det-card';
+
+            // Color face cards and hearts/diamonds ranks red for visual variety
+            const redRanks = ['J', 'Q', 'K'];
+            if (redRanks.includes(rank)) card.classList.add('red-card');
+
+            card.textContent = rank;
+            log.appendChild(card);
+
+            // Scroll to end
+            log.scrollLeft = log.scrollWidth;
+
+            // Keep max 20 in view
+            while (log.children.length > 20) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        /* ---- Draw Bounding Boxes ---- */
+        drawDetections() {
+            // Don't clear — we already drew the video frame
+            const ctx = this.ctx;
+
+            for (const det of this.lastDetections) {
+                // Color based on confidence
+                const hue = det.confidence > 0.5 ? 120 : (det.confidence > 0.35 ? 60 : 0);
+                const color = `hsla(${hue}, 100%, 50%, 0.8)`;
+                const fillColor = `hsla(${hue}, 100%, 50%, 0.1)`;
+
+                // Bounding box
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(det.x, det.y, det.w, det.h);
+
+                // Semi-transparent fill
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(det.x, det.y, det.w, det.h);
+
+                // Label background
+                const label = `${det.rank} ${Math.round(det.confidence * 100)}%`;
+                ctx.font = 'bold 18px Inter, Arial, sans-serif';
+                const textW = ctx.measureText(label).width;
+                const labelH = 26;
+                const labelX = det.x;
+                const labelY = det.y - labelH - 2;
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.roundRect(labelX, labelY, textW + 12, labelH, 4);
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.fillText(label, labelX + 6, labelY + 19);
+
+                // Corner indicator
+                const cornerW = Math.round(det.w * 0.28);
+                const cornerH = Math.round(det.h * 0.30);
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.strokeRect(det.x + det.w * 0.02, det.y + det.h * 0.02, cornerW, cornerH);
+                ctx.setLineDash([]);
+            }
+        }
+    }
+
+    /* ========================================================================
+       INITIALIZATION
+       ======================================================================== */
+    const detector = new CardDetector();
+
+    // Sensitivity slider
+    $('sensitivitySlider').addEventListener('input', (e) => {
+        detector.sensitivity = parseInt(e.target.value, 10);
+        $('sensitivityVal').textContent = e.target.value;
+    });
+
+    // Scan button
+    $('scanBtn').addEventListener('click', () => {
+        if (detector.running) {
+            detector.stop();
+            $('scanBtn').classList.remove('on');
+            $('scanBtn').textContent = 'Scan';
+        } else {
+            detector.start();
+            $('scanBtn').classList.add('on');
+            $('scanBtn').textContent = 'Scanning';
+        }
+    });
+
+    // Close scan overlay
+    $('scanCloseBtn').addEventListener('click', () => {
+        detector.stop();
+        $('scanBtn').classList.remove('on');
+        $('scanBtn').textContent = 'Scan';
+    });
+
     function init() {
-      loadState();
+        loadState();
+        $('decksInput').value = state.decks;
+        $('bankrollInput').value = state.bankroll;
+        $('boxesInput').value = state.boxes;
+        $('minBetInput').value = state.minBet;
 
-      $('decksInput').value = state.decks;
-      $('bankrollInput').value = state.bankroll;
-      $('boxesInput').value = state.boxes;
-      $('minBetInput').value = state.minBet;
+        $('decksInput').addEventListener('change', e => {
+            state.decks = parseInt(e.target.value, 10) || 6;
+            if (state.seen.length > totalCards()) state.seen = state.seen.slice(0, totalCards());
+            saveState();
+            render();
+        });
+        $('bankrollInput').addEventListener('input', e => {
+            state.bankroll = Math.max(1, parseInt(e.target.value, 10) || 0);
+            saveState();
+            render();
+        });
+        $('boxesInput').addEventListener('input', e => {
+            state.boxes = Math.max(1, Math.min(7, parseInt(e.target.value, 10) || 1));
+            saveState();
+            render();
+        });
+        $('minBetInput').addEventListener('input', e => {
+            state.minBet = Math.max(1, parseInt(e.target.value, 10) || 1);
+            saveState();
+            render();
+        });
+        $('undoBtn').addEventListener('click', undo);
+        $('resetBtn').addEventListener('click', reset);
+        $('cameraBtn').addEventListener('click', toggleCamera);
 
-      $('decksInput').addEventListener('change', e => {
-        state.decks = parseInt(e.target.value, 10) || 6;
-        if (state.seen.length > totalCards()) state.seen = state.seen.slice(0, totalCards());
-        saveState(); render();
-      });
-      $('bankrollInput').addEventListener('input', e => {
-        state.bankroll = Math.max(1, parseInt(e.target.value, 10) || 0);
-        saveState(); render();
-      });
-      $('boxesInput').addEventListener('input', e => {
-        state.boxes = Math.max(1, Math.min(7, parseInt(e.target.value, 10) || 1));
-        saveState(); render();
-      });
-      $('minBetInput').addEventListener('input', e => {
-        state.minBet = Math.max(1, parseInt(e.target.value, 10) || 1);
-        saveState(); render();
-      });
-
-      $('undoBtn').addEventListener('click', undo);
-      $('resetBtn').addEventListener('click', reset);
-      $('cameraBtn').addEventListener('click', toggleCamera);
-
-      buildSystemsPanel();
-      buildCardGrid();
-      buildTagsTable();
-      render();
+        buildSystemsPanel();
+        buildCardGrid();
+        buildTagsTable();
+        render();
     }
 
     init();
-  </script>
+    </script>
 </body>
 </html>
